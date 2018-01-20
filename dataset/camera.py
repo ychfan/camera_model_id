@@ -91,11 +91,17 @@ def parse(mode, filename, label):
           _, image = cv2.imencode('.jpg', image, encode_param)
           image = cv2.imdecode(image, 1)
         elif manip == 2:  # resizing (via bicubic) by a factor of 0.5
-          image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5,
-                             interpolation=cv2.INTER_CUBIC)
+          width = np.size(image, 1)
+          height = np.size(image, 0)
+          if width * 0.5 >= IMAGE_SIZE and height * 0.5 >= IMAGE_SIZE:
+            image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5,
+                               interpolation=cv2.INTER_CUBIC)
         elif manip == 3:  # resizing (via bicubic) by a factor of 0.8
-          image = cv2.resize(image, (0, 0), fx=0.8, fy=0.8,
-                             interpolation=cv2.INTER_CUBIC)
+          width = np.size(image, 1)
+          height = np.size(image, 0)
+          if width * 0.8 >= IMAGE_SIZE and height * 0.8 >= IMAGE_SIZE:
+            image = cv2.resize(image, (0, 0), fx=0.8, fy=0.8,
+                               interpolation=cv2.INTER_CUBIC)
         elif manip == 4:  # resizing (via bicubic) by a factor of 1.5
           image = cv2.resize(image, (0, 0), fx=1.5, fy=1.5,
                              interpolation=cv2.INTER_CUBIC)
@@ -120,6 +126,14 @@ def parse(mode, filename, label):
         top += random.gauss(0, 3)
       left = round(left)
       top = round(top)
+      if top + IMAGE_SIZE > height:
+        top = height - IMAGE_SIZE
+      if left + IMAGE_SIZE > width:
+        left = width - IMAGE_SIZE
+      if top < 0:
+        top = 0
+      if left < 0:
+        left = 0
       image = image[top:top + IMAGE_SIZE, left:left + IMAGE_SIZE]
       image = image / 255.0
     return image.astype(np.float32)
