@@ -15,7 +15,6 @@ from common import resnet
 def get_params():
   return {
     "weight_decay": 0.0002,
-    "drop_rate": 0.3
   }
 
 
@@ -25,23 +24,45 @@ def model(features, labels, mode, params):
   labels = labels["label"]
 
   training = mode == tf.estimator.ModeKeys.TRAIN
-  drop_rate = params.drop_rate if training else 0.0
 
-  features = ops.conv_layers(
-    images, [16], [3], linear_top_layer=True,
-    weight_decay=params.weight_decay)
+  def res_block(x, size, stride, training, name):
+    with tf.variable_scope(name):
+      x = tf.layers.batch_normalization(x, training=training)
+      x = tf.nn.relu(x)
+      x = tf.layers.conv2d(x, size / 4, 1, strides=stride, padding="same",
+                           kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
 
-  features = resnet.resnet_blocks(
-    features, [16, 32, 64], [1, 2, 2], 5, training=training,
-    weight_decay=params.weight_decay,
-    drop_rates=drop_rate)
+      x = tf.layers.batch_normalization(x, training=training)
+      x = tf.nn.relu(x)
+      x = tf.layers.conv2d(x, size / 4, 3, padding="same",
+                           kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
 
-  features = ops.batch_normalization(features, training=training)
-  features = tf.nn.relu(features)
+      x = tf.layers.batch_normalization(x, training=training)
+      x = tf.nn.relu(x)
+      x = tf.layers.conv2d(x, size, 1, padding="same",
+                           kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
+      return x
 
-  logits = ops.dense_layers(
-    features, [params.num_classes], linear_top_layer=False,
-    weight_decay=params.weight_decay)
+  def res_stage(x, input_channels, output_channels, stride, training, name):
+    with tf.variable_scope(name):
+      for block in range(3):
+        x += res_block(x, input_channels, 1, training, "block" + str(block))
+      res = res_block(x, output_channels, stride, training, "up")
+      x = tf.layers.conv2d(x, output_channels, 1, strides=stride, padding="same",
+                           kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
+      x += res
+      return x
+
+  size = 4
+  x = tf.layers.conv2d(images, size, 1, padding="same",
+                       kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
+
+  for stage in range(4):
+    x = res_stage(x, size, size * 2, 4, training, "stage" + str(stage))
+    size *= 2
+
+  logits = tf.layers.dense(x, params.num_classes,
+                           kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
 
   logits = tf.reduce_mean(logits, axis=[1, 2])
 

@@ -4,8 +4,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
-import matplotlib
 import numpy as np
 import os
 import tensorflow as tf
@@ -18,18 +16,15 @@ from common import ops
 from common import optimizer
 from common import metrics
 
-import dataset.cifar10
-import dataset.cifar100
-import dataset.mnist
+import dataset.camera
 
-import model.alexnet
-import model.allconv
+import model.baseline
 import model.resnet
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-tf.flags.DEFINE_string("model", "alexnet", "Model name.")
-tf.flags.DEFINE_string("dataset", "mnist", "Dataset name.")
+tf.flags.DEFINE_string("model", "baseline", "Model name.")
+tf.flags.DEFINE_string("dataset", "camera", "Dataset name.")
 tf.flags.DEFINE_string("output_dir", "", "Optional output dir.")
 tf.flags.DEFINE_string("schedule", "train_and_evaluate", "Schedule.")
 tf.flags.DEFINE_string("hparams", "", "Hyper parameters.")
@@ -44,25 +39,23 @@ tf.flags.DEFINE_integer("num_gpus", 0, "Numner of gpus.")
 FLAGS = tf.flags.FLAGS
 
 MODELS = {
-  "alexnet": model.alexnet,
-  "allconv": model.allconv,
-  "resnet": model.resnet
+  "baseline": model.baseline,
+  "resnet": model.resnet,
 }
 
 DATASETS = {
-  "cifar10": dataset.cifar10,
-  "cifar100": dataset.cifar100,
-  "mnist": dataset.mnist,
+  "camera": dataset.camera
 }
 
 
 def experiment_fn(run_config, hparams):
   estimator = tf.estimator.Estimator(
-    model_fn=optimizer.make_model_fn(MODELS[FLAGS.model].model, FLAGS.num_gpus), 
+    model_fn=optimizer.make_model_fn(
+      MODELS[FLAGS.model].model, FLAGS.num_gpus),
     config=run_config, params=hparams)
   train_hooks = [
     hooks.ExamplesPerSecondHook(
-      batch_size=hparams.batch_size, 
+      batch_size=hparams.batch_size,
       every_n_iter=FLAGS.save_summary_steps),
     hooks.LoggingTensorHook(
       collection="batch_logging",
@@ -80,12 +73,12 @@ def experiment_fn(run_config, hparams):
     estimator=estimator,
     train_input_fn=common_io.make_input_fn(
       DATASETS[FLAGS.dataset], tf.estimator.ModeKeys.TRAIN, hparams,
-      num_epochs=FLAGS.num_epochs, 
+      num_epochs=FLAGS.num_epochs,
       shuffle_batches=FLAGS.shuffle_batches,
       num_threads=FLAGS.num_reader_threads),
     eval_input_fn=common_io.make_input_fn(
       DATASETS[FLAGS.dataset], tf.estimator.ModeKeys.EVAL, hparams,
-      num_epochs=FLAGS.num_epochs, 
+      num_epochs=FLAGS.num_epochs,
       shuffle_batches=FLAGS.shuffle_batches,
       num_threads=FLAGS.num_reader_threads),
     eval_steps=None,
