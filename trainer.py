@@ -21,6 +21,7 @@ import dataset.camera
 import model.baseline
 import model.resnet
 import model.keras_inception_v3
+import model.keras_mobilenet
 import model.slim_vgg
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -44,6 +45,7 @@ MODELS = {
   "baseline": model.baseline,
   "resnet": model.resnet,
   "keras_inception_v3": model.keras_inception_v3,
+  "keras_mobilenet": model.keras_mobilenet,
   "slim_vgg": model.slim_vgg,
 }
 
