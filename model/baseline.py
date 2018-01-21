@@ -25,7 +25,7 @@ def model(features, labels, mode, params):
 
   training = mode == tf.estimator.ModeKeys.TRAIN
 
-  x = images
+  x = images / 255.0
   x = tf.layers.conv2d(x, 4, 3, padding="same",
                        kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
   x = tf.layers.batch_normalization(x, training=training)

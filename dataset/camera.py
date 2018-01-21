@@ -135,7 +135,6 @@ def parse(mode, filename, label):
       if left < 0:
         left = 0
       image = image[top:top + IMAGE_SIZE, left:left + IMAGE_SIZE]
-      image = image / 255.0
     return image.astype(np.float32)
   image = tf.py_func(read_image, [mode, filename], tf.float32, stateful=False)
   image = tf.reshape(image, [IMAGE_SIZE, IMAGE_SIZE, 3])

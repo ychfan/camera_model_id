@@ -25,6 +25,8 @@ def model(features, labels, mode, params):
 
   training = mode == tf.estimator.ModeKeys.TRAIN
 
+  x = images / 255.0
+
   def res_block(x, size, stride, training, name):
     with tf.variable_scope(name):
       x = tf.layers.batch_normalization(x, training=training)
@@ -54,7 +56,7 @@ def model(features, labels, mode, params):
       return x
 
   size = 4
-  x = tf.layers.conv2d(images, size, 1, padding="same",
+  x = tf.layers.conv2d(x, size, 1, padding="same",
                        kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
 
   for stage in range(4):
