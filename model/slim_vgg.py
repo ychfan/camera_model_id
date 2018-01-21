@@ -31,6 +31,21 @@ def model(features, labels, mode, params):
                         is_training=training,
                         spatial_squeeze=False)
 
+    if training:
+      variables_to_restore = slim.get_variables_to_restore(
+        exclude=['vgg_16/fc6', 'vgg_16/fc7', 'vgg_16/fc8'])
+      tf.train.init_from_checkpoint(
+        "vgg_16.ckpt", {v.name.split(':')[0]: v for v in variables_to_restore})
+      variables_in_fc = []
+      for scope in ['vgg_16/fc6', 'vgg_16/fc7', 'vgg_16/fc8']:
+        variables = tf.get_collection(
+          tf.GraphKeys.TRAINABLE_VARIABLES, scope)
+        variables_in_fc.extend(variables)
+      variables_to_train = tf.get_collection_ref(
+        tf.GraphKeys.TRAINABLE_VARIABLES)
+      variables_to_train.clear()
+      variables_to_train.extend(variables_in_fc)
+
   logits = tf.reduce_mean(net, axis=[1, 2])
 
   predictions = tf.argmax(logits, axis=-1)
