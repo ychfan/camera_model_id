@@ -20,6 +20,7 @@ import dataset.camera
 
 import model.baseline
 import model.resnet
+import model.keras_inception_v3
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -41,6 +42,7 @@ FLAGS = tf.flags.FLAGS
 MODELS = {
   "baseline": model.baseline,
   "resnet": model.resnet,
+  "keras_inception_v3": model.keras_inception_v3,
 }
 
 DATASETS = {
