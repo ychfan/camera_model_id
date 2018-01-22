@@ -1,6 +1,5 @@
 .DS_Store
 .vscode
 *.pyc
-data
-output
-results
+/data
+/results
