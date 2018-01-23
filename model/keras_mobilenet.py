@@ -24,12 +24,14 @@ def model(features, labels, mode, params):
   tf.keras.backend.set_learning_phase(training)
 
   images = images[:, 144:-144, 144:-144, :]
-
+  images = tf.keras.applications.mobilenet.preprocess_input(images)
   mobilenet = tf.keras.applications.MobileNet(
     input_shape=(224, 224, 3), include_top=False,
     weights='imagenet' if training else None,
     input_tensor=images,
     pooling='avg')
+  for layer in mobilenet.layers:
+    layer.trainable = False
 
   logits = tf.layers.dense(mobilenet(images), params.num_classes,
                            kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))

@@ -26,6 +26,8 @@ def model(features, labels, mode, params):
   slim = tf.contrib.slim
   vgg = nets.vgg
   with slim.arg_scope(vgg.vgg_arg_scope()):
+    mean = tf.constant([123.68, 116.78, 103.94])
+    images = images - mean
     net, _ = vgg.vgg_16(images,
                         num_classes=params.num_classes,
                         is_training=training,

@@ -26,11 +26,14 @@ def model(features, labels, mode, params):
   training = mode == tf.estimator.ModeKeys.TRAIN
   tf.keras.backend.set_learning_phase(training)
 
+  images = tf.keras.applications.inception_v3.preprocess_input(images)
   inception = tf.keras.applications.inception_v3.InceptionV3(
     input_shape=(512, 512, 3), include_top=False,
     weights='imagenet' if training else None,
     input_tensor=images,
     pooling='avg')
+  for layer in inception.layers:
+    layer.trainable = False
 
   logits = tf.layers.dense(inception(images), params.num_classes,
                            kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
