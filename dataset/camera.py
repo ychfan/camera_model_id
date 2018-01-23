@@ -83,39 +83,21 @@ def parse(mode, filename, label):
         else:
           manip = hash(filename) % 8
         if manip == 0:  # JPEG compression with quality factor = 70
-          encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
-          _, image = cv2.imencode('.jpg', image, encode_param)
-          image = cv2.imdecode(image, 1)
+          image = jpeg_compression(image, 70)
         elif manip == 1:  # JPEG compression with quality factor = 90
-          encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
-          _, image = cv2.imencode('.jpg', image, encode_param)
-          image = cv2.imdecode(image, 1)
+          image = jpeg_compression(image, 90)
         elif manip == 2:  # resizing (via bicubic) by a factor of 0.5
-          width = np.size(image, 1)
-          height = np.size(image, 0)
-          if width * 0.5 >= IMAGE_SIZE and height * 0.5 >= IMAGE_SIZE:
-            image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5,
-                               interpolation=cv2.INTER_CUBIC)
+          image = resize(image, 0.5)
         elif manip == 3:  # resizing (via bicubic) by a factor of 0.8
-          width = np.size(image, 1)
-          height = np.size(image, 0)
-          if width * 0.8 >= IMAGE_SIZE and height * 0.8 >= IMAGE_SIZE:
-            image = cv2.resize(image, (0, 0), fx=0.8, fy=0.8,
-                               interpolation=cv2.INTER_CUBIC)
+          image = resize(image, 0.8)
         elif manip == 4:  # resizing (via bicubic) by a factor of 1.5
-          image = cv2.resize(image, (0, 0), fx=1.5, fy=1.5,
-                             interpolation=cv2.INTER_CUBIC)
+          image = resize(image, 1.5)
         elif manip == 5:  # resizing (via bicubic) by a factor of 2.0
-          image = cv2.resize(image, (0, 0), fx=2.0, fy=2.0,
-                             interpolation=cv2.INTER_CUBIC)
+          image = resize(image, 2.0)
         elif manip == 6:  # gamma correction using gamma = 0.8
-          image = image / 255.0
-          image = cv2.pow(image, 0.8)
-          image = image * 255.0
+          image = gamma_correction(image, 0.8)
         elif manip == 7:  # gamma correction using gamma = 1.2
-          image = image / 255.0
-          image = cv2.pow(image, 1.2)
-          image = image * 255.0
+          image = gamma_correction(image, 1.2)
       # crop center patch
       width = np.size(image, 1)
       height = np.size(image, 0)
@@ -143,3 +125,24 @@ def parse(mode, filename, label):
   label = tf.to_int32(label)
   #label = tf.Print(label, [image, label])
   return {"image": image}, {"label": label}
+
+
+def jpeg_compression(image, factor):
+  encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), factor]
+  _, image = cv2.imencode('.jpg', image, encode_param)
+  return cv2.imdecode(image, 1)
+
+
+def resize(image, factor):
+  if np.size(image, 0) * factor >= IMAGE_SIZE and \
+          np.size(image, 1) * factor >= IMAGE_SIZE:
+    image = cv2.resize(image, (0, 0), fx=factor, fy=factor,
+                       interpolation=cv2.INTER_CUBIC)
+  return image
+
+
+def gamma_correction(image, gamma):
+  inv_gamma = 1.0 / gamma
+  table = np.array([((i / 255.0) ** inv_gamma) * 255
+                    for i in np.arange(0, 256)]).astype("uint8")
+  return cv2.LUT(image, table)
