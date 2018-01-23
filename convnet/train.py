@@ -4,8 +4,7 @@ import numpy as np
 import tensorflow as tf
 import cv2
 from convnet import convnet
-from data_loader import data_loader
-from data_loader import augment
+from data import data_loader
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS

@@ -4,7 +4,7 @@ import random
 import tensorflow as tf
 import cv2
 
-IMAGE_SIZE = 224
+IMAGE_SIZE = 64
 
 def data_loader(data_list, num_epochs):
     with open(data_list) as f:
@@ -13,13 +13,45 @@ def data_loader(data_list, num_epochs):
     label_list = [int(_.split(' ')[1]) for _ in line_list]
 
     filename_label_queue = tf.train.slice_input_producer([filename_list, label_list], num_epochs=num_epochs)
-    return filename_label_queue[0], filename_label_queue[1]
+
+    image_file = tf.read_file(filename_label_queue[0])
+    image = tf.image.decode_image(image_file, channels=1)
+    image = tf.image.convert_image_dtype(image, tf.float32)
+    image = tf.reshape(image, [FLAGS.input_size, FLAGS.input_size, 1])
+
+    manip = tf.random_uniform(shape=(), minval=0, maxval=2, dtype=tf.int32)
+    manip_type = tf.cond(manip==0, lambda: tf.random_uniform(shape=(), minval=0, maxval=8, dtype=tf.int32), lambda: 8)
+
+    image = tf.cond(manip_type==0, lambda: tf.image.encode_jpeg(image, quality=70), lambda: image)
+    image = tf.cond(manip_type==0, lambda: tf.random_crop(image, (IMAGE_SIZE, IMAGE_SIZE), lambda: image)
+
+    image = tf.cond(manip_type==1, lambda: tf.image.encode_jpeg(image, quality=90), lambda: image)
+    image = tf.cond(manip_type==1, lambda: tf.random_crop(image, (IMAGE_SIZE, IMAGE_SIZE), lambda: image)
+
+    image = tf.cond(manip_type==2, lambda: tf.random_crop(image, (IMAGE_SIZE*0.5, IMAGE_SIZE*0.5)), lambda: image)
+    image = tf.cond(manip_type==2, lambda: tf.image.resize_bicubic(image, [IMAGE_SIZE, IMAGE_SIZE]), lambda: image)
+
+    image = tf.cond(manip_type==3, lambda: tf.random_crop(image, (int(IMAGE_SIZE*0.8), int(IMAGE_SIZE*0.8)), lambda: image)
+    image = tf.cond(manip_type==3, lambda: tf.image.resize_bicubic(image, [IMAGE_SIZE, IMAGE_SIZE]), lambda: image)
+
+    image = tf.cond(manip_type==4, lambda: tf.random_crop(image, (IMAGE_SIZE*1.5, IMAGE_SIZE*1.5)), lambda: image)
+    image = tf.cond(manip_type==4, lambda: tf.image.resize_bicubic(image, [IMAGE_SIZE, IMAGE_SIZE]), lambda: image)
+
+    image = tf.cond(manip_type==5, lambda: tf.random_crop(image, (int(IMAGE_SIZE*2), int(IMAGE_SIZE*2)), lambda: image)
+    image = tf.cond(manip_type==5, lambda: tf.image.resize_bicubic(image, [IMAGE_SIZE, IMAGE_SIZE]), lambda: image)
+
+    image = tf.cond(manip_type==6, lambda: tf.image.adjust_gamma(image, gamma=0.8, lambda:image)
+    image = tf.cond(manip_type==6, lambda: tf.random_crop(image, (IMAGE_SIZE, IMAGE_SIZE), lambda: image)
+
+    image = tf.cond(manip_type==7, lambda: tf.image.adjust_gamma(image, gamma=1.2, lambda:image)
+    image = tf.cond(manip_type==7, lambda: tf.random_crop(image, (IMAGE_SIZE, IMAGE_SIZE), lambda: image)
+
+    return image, filename_label_queue[1]
 
 
 def augment(filename, mode='train'):
   image = cv2.imread(filename.decode('utf-8'))
   manip = random.random() < 0.5
-  manip = False  # TODO
   if manip:
     manip = random.randrange(8)
     if manip == 0:  # JPEG compression with quality factor = 70
