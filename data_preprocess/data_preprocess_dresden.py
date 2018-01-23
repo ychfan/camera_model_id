@@ -15,12 +15,12 @@ lines_with_label = []
 for line in lines:
     label_strs = line.split('/')[-1]
     label_strs = label_strs.split('_')
-    label_str = label_strs[0] + '_' + label_strs[1] + '_' + label_strs[2]
+    label_str = label_strs[0] + '_' + label_strs[1]
     if label_str == 'Nikon_D70s':
         label_str = 'Nikon_D70'
     if label_str not in label_dict.keys():
-        label_dict[label_str]  = label_counter
-        label_counter =+ 1
+        label_dict[label_str] = label_counter
+        label_counter += 1
     line_with_label = [line, label_dict[label_str]]
     lines_with_label.append(line_with_label)
 
