@@ -101,13 +101,8 @@ def parse(mode, filename, label):
       # crop center patch
       width = np.size(image, 1)
       height = np.size(image, 0)
-      left = (width - IMAGE_SIZE) / 2
-      top = (height - IMAGE_SIZE) / 2
-      if mode == tf.estimator.ModeKeys.TRAIN:
-        left += random.gauss(0, 3)
-        top += random.gauss(0, 3)
-      left = round(left)
-      top = round(top)
+      left = (width - IMAGE_SIZE) // 2
+      top = (height - IMAGE_SIZE) // 2
       if top + IMAGE_SIZE > height:
         top = height - IMAGE_SIZE
       if left + IMAGE_SIZE > width:

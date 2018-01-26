@@ -26,9 +26,13 @@ def model(features, labels, mode, params):
   training = mode == tf.estimator.ModeKeys.TRAIN
   tf.keras.backend.set_learning_phase(training)
 
+  image_shape = (512, 512, 3)
+  if training:
+    image_shape = (140, 140, 3)
+    images = tf.random_crop(images, [params.batch_size, 140, 140, 3])
   images = tf.keras.applications.inception_v3.preprocess_input(images)
   inception = tf.keras.applications.inception_v3.InceptionV3(
-    input_shape=(512, 512, 3), include_top=False,
+    input_shape=image_shape, include_top=False,
     weights='imagenet' if training else None,
     input_tensor=images,
     pooling='avg')
