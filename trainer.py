@@ -17,6 +17,7 @@ from common import optimizer
 from common import metrics
 
 import dataset.camera
+import dataset.camera_mem
 
 import model.baseline
 import model.keras_inception_v3
@@ -25,15 +26,15 @@ import model.slim_vgg
 tf.logging.set_verbosity(tf.logging.INFO)
 
 tf.flags.DEFINE_string("model", "baseline", "Model name.")
-tf.flags.DEFINE_string("dataset", "camera", "Dataset name.")
+tf.flags.DEFINE_string("dataset", "camera_mem", "Dataset name.")
 tf.flags.DEFINE_string("output_dir", "", "Optional output dir.")
 tf.flags.DEFINE_string("schedule", "train_and_evaluate", "Schedule.")
 tf.flags.DEFINE_string("hparams", "", "Hyper parameters.")
 tf.flags.DEFINE_integer("num_epochs", None, "Number of training epochs.")
-tf.flags.DEFINE_integer("shuffle_batches", 500, "Shuffle batches.")
+tf.flags.DEFINE_integer("shuffle_batches", 40, "Shuffle batches.")
 tf.flags.DEFINE_integer("num_reader_threads", 8, "Num reader threads.")
-tf.flags.DEFINE_integer("save_summary_steps", 400, "Summary steps.")
-tf.flags.DEFINE_integer("save_checkpoints_steps", 400, "Checkpoint steps.")
+tf.flags.DEFINE_integer("save_summary_steps", 1000, "Summary steps.")
+tf.flags.DEFINE_integer("save_checkpoints_steps", 10000, "Checkpoint steps.")
 tf.flags.DEFINE_integer("eval_frequency", 1, "Eval frequency.")
 tf.flags.DEFINE_integer("num_gpus", 0, "Numner of gpus.")
 
@@ -46,7 +47,8 @@ MODELS = {
 }
 
 DATASETS = {
-  "camera": dataset.camera
+  "camera": dataset.camera,
+  "camera_mem": dataset.camera_mem,
 }
 
 

@@ -73,11 +73,11 @@ def make_input_fn(dataset, mode, params,
   def _input_fn():
     with tf.device(tf.DeviceSpec(device_type="CPU", device_index=0)):
       d = dataset.read(mode)
-      d = d.cache()
+      d = d.cache("./cache/" + mode)
+      d = d.map(_parse, num_threads=num_threads)
       if mode == tf.estimator.ModeKeys.TRAIN:
         d = d.repeat(num_epochs)
         d = d.shuffle(params.batch_size * shuffle_batches)
-      d = d.map(_parse, num_threads=num_threads)
       d = d.batch(params.batch_size)
       d = d.prefetch(num_threads)
       if initializable_iterator:
