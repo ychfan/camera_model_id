@@ -15,7 +15,7 @@ TRAIN_LIST="$ROOT_DIR/data/dresden/filelist_train"
 VAL_LIST="$ROOT_DIR/data/dresden/filelist_valid"
 NUM_VAL_DATA=500
 LEARNING_RATE=0.015
-EPOCHS=100
+EPOCHS=1000
 PY_SCRIPT="train.py"
 
 RESULT_DIR="${ROOT_DIR}/results/$TRAIN_ID"
