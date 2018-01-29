@@ -13,8 +13,8 @@ DEFAULT_PARAMS = {
   "warmup_steps": 100,
   "constant_steps": 20000,
   "decay_steps": 20000,
-  "decay_rate": 0.1,
-  "batch_size": 128,
+  "decay_rate": 0.9,
+  "batch_size": 64,
 }
 
 
