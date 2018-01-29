@@ -21,6 +21,7 @@ import dataset.camera_mem
 
 import model.baseline
 import model.keras_inception_v3
+import model.keras_inception_resnet_v2
 import model.slim_vgg
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -43,6 +44,7 @@ FLAGS = tf.flags.FLAGS
 MODELS = {
   "baseline": model.baseline,
   "keras_inception_v3": model.keras_inception_v3,
+  "keras_inception_resnet_v2": model.keras_inception_resnet_v2,
   "slim_vgg": model.slim_vgg,
 }
 
