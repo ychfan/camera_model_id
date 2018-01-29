@@ -84,7 +84,7 @@ def read(mode):
         return np.stack(images)
       elif mode == tf.estimator.ModeKeys.EVAL:
         manip = hash(filename) % 16
-        if manip:
+        if manip % 2 == 0:
           manip = manip / 2
           if manip == 0:  # JPEG compression with quality factor = 70
             image = jpeg_compression(image, 70)
