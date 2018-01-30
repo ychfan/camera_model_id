@@ -8,8 +8,8 @@ import numpy as np
 import tensorflow as tf
 
 
-def exponential_decay(learning_rate, 
-                      warmup_steps=100, 
+def exponential_decay(learning_rate,
+                      warmup_steps=100,
                       constant_steps=20000,
                       decay_steps=20000,
                       decay_rate=0.5):
@@ -29,7 +29,7 @@ def exponential_decay(learning_rate,
   return learning_rate
 
 
-def cyclic_decay(learning_rate, 
+def cyclic_decay(learning_rate,
                  min_learning_rate=1e-4,
                  cycle_length=1000,
                  decay_steps=20000,
@@ -42,8 +42,8 @@ def cyclic_decay(learning_rate,
   max_learning_rate = learning_rate * decay
 
   cycle = tf.sin(step * 2 * 3.141592 / cycle_length)
-  learning_rate = ((max_learning_rate - min_learning_rate) * (cycle + 1) * 0.5 + 
-                    min_learning_rate)
+  learning_rate = ((max_learning_rate - min_learning_rate) * (cycle + 1) * 0.5 +
+                   min_learning_rate)
 
   return learning_rate
 
@@ -84,8 +84,9 @@ def make_model_fn(model_fn, num_gpus=None):
         with tf.device(tf.DeviceSpec(device_type="GPU", device_index=i)):
           with tf.name_scope("tower_%d" % i) as name_scope:
             with tf.variable_scope(tf.get_variable_scope(), reuse=i > 0):
-              device_features = {k: v[i] for k, v in split_features.iteritems()}
-              device_labels = {k:v[i] for k, v in split_labels.iteritems()}
+              device_features = {k: v[i]
+                                 for k, v in split_features.iteritems()}
+              device_labels = {k: v[i] for k, v in split_labels.iteritems()}
 
               device_predictions, device_loss, device_metrics = model_fn(
                 device_features, device_labels, mode, params)
@@ -125,21 +126,27 @@ def make_model_fn(model_fn, num_gpus=None):
 
         loss = tf.add_n(losses) if losses else None
     else:
-      predictions, loss, eval_metrics = model_fn(features, labels, mode, params)
-      tf.summary.scalar("loss/main", loss)
+      predictions, loss, eval_metrics = model_fn(
+        features, labels, mode, params)
 
-      update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-
-      reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-      tf.summary.scalar("loss/regularization", tf.add_n(reg_losses))
-
-      loss = tf.add_n([loss] + reg_losses)
-
-      if mode == tf.estimator.ModeKeys.TRAIN:
-        with tf.control_dependencies(update_ops):
-          train_op = opt.minimize(loss, global_step=global_step)
-      else:
+      if mode == tf.estimator.ModeKeys.PREDICT:
+        loss = None
         train_op = None
+      else:
+        tf.summary.scalar("loss/main", loss)
+
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+
+        reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        tf.summary.scalar("loss/regularization", tf.add_n(reg_losses))
+
+        loss = tf.add_n([loss] + reg_losses)
+
+        if mode == tf.estimator.ModeKeys.TRAIN:
+          with tf.control_dependencies(update_ops):
+            train_op = opt.minimize(loss, global_step=global_step)
+        else:
+          train_op = None
     """
     if mode == tf.estimator.ModeKeys.TRAIN:
       opts = tf.profiler.ProfileOptionBuilder().trainable_variables_parameter()

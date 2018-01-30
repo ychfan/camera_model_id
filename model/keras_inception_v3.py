@@ -21,7 +21,8 @@ def get_params():
 def model(features, labels, mode, params):
   """CNN classifier model."""
   images = features["image"]
-  labels = labels["label"]
+  if mode != tf.estimator.ModeKeys.PREDICT:
+    labels = labels["label"]
 
   training = mode == tf.estimator.ModeKeys.TRAIN
   tf.keras.backend.set_learning_phase(training)
@@ -43,6 +44,9 @@ def model(features, labels, mode, params):
                            kernel_regularizer=tf.contrib.layers.l2_regularizer(params.weight_decay))
 
   predictions = tf.argmax(logits, axis=-1)
+
+  if mode == tf.estimator.ModeKeys.PREDICT:
+    return {"predictions": predictions}, None, None
 
   loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 

@@ -69,7 +69,11 @@ def read(mode):
 
   def read_data(filename, label):
     def read_image(filename):
-      image = cv2.imread(TRAIN_DIR + filename.decode('utf-8'))
+      if mode == tf.estimator.ModeKeys.PREDICT:
+        data_dir = TEST_DIR
+      else:
+        data_dir = TRAIN_DIR
+      image = cv2.imread(data_dir + filename.decode('utf-8'))
       if mode == tf.estimator.ModeKeys.TRAIN:
         images = []
         images.append(bgr2rgb(crop_center(image)))
